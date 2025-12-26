@@ -6,146 +6,80 @@
     <title>Locky & Hoah Music Hub</title>
     <style>
         :root {
-            --bg: #121212;
-            --card: #1e1e1e;
-            --text: #ffffff;
-            --accent: #1DB954;
-            --input-bg: #2a2a2a;
+            --bg: #121212; --card: #1e1e1e; --text: #ffffff;
+            --accent: #1DB954; --input-bg: #2a2a2a;
         }
-
-        /* Light Mode */
         body.light-mode {
-            --bg: #f5f5f5;
-            --card: #ffffff;
-            --text: #121212;
-            --input-bg: #eeeeee;
+            --bg: #f5f5f5; --card: #ffffff; --text: #121212; --input-bg: #eeeeee;
         }
-
         body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', sans-serif; display: flex;
+            flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px;
             transition: 0.3s;
         }
-
-        .main-frame {
-            background: var(--card);
-            padding: 2.5rem;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            width: 90%;
-            max-width: 500px;
-            text-align: center;
+        .main-frame, .list-container {
+            background: var(--card); padding: 2rem; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 90%; max-width: 500px; text-align: center; margin-bottom: 20px;
         }
-
-        .question-box { margin-bottom: 25px; }
-        
-        h3 { margin-bottom: 15px; font-size: 1.1rem; opacity: 0.9; }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
+        .question-box { margin-bottom: 20px; }
+        .btn-group { display: flex; gap: 10px; }
         button {
-            background: var(--input-bg);
-            color: var(--text);
-            border: 2px solid transparent;
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-            transition: 0.2s;
+            background: var(--input-bg); color: var(--text); border: 2px solid transparent;
+            padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; transition: 0.2s;
         }
-
-        button.selected {
-            border-color: var(--accent);
-            background: var(--accent);
-            color: white;
-        }
-
+        button.selected { border-color: var(--accent); background: var(--accent); color: white; }
         input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid var(--input-bg);
-            background: var(--input-bg);
-            color: var(--text);
-            box-sizing: border-box;
-            outline: none;
+            width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--input-bg);
+            background: var(--input-bg); color: var(--text); box-sizing: border-box;
         }
-
-        input[type="text"]:focus {
-            border-color: var(--accent);
+        #publish-btn {
+            background: var(--accent); color: white; width: 100%; margin-top: 20px; font-size: 1.1rem; display: none;
         }
-
-        #preview-area {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--input-bg);
+        .post-card {
+            background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 15px; text-align: left;
+            border-left: 5px solid var(--accent);
         }
-
-        .theme-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: auto;
-            padding: 8px 15px;
-            font-size: 0.8rem;
-        }
-
-        iframe {
-            border-radius: 12px;
-            margin-top: 15px;
-        }
+        .theme-btn { position: fixed; top: 10px; right: 10px; width: auto; z-index: 100; }
+        iframe { border-radius: 12px; margin-top: 10px; }
     </style>
 </head>
 <body class="dark-mode">
 
-    <button class="theme-btn" onclick="toggleTheme()">🌓 Switch Theme</button>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
 
     <div class="main-frame">
         <h1>Music Hub</h1>
-
         <div class="question-box">
-            <h3>1. Are you Locky or Hoah?</h3>
+            <h3>1. Who are you?</h3>
             <div class="btn-group">
                 <button id="user-Hoah" onclick="selectUser('Hoah')">Hoah</button>
                 <button id="user-Locky" onclick="selectUser('Locky')">Locky</button>
             </div>
         </div>
-
         <div class="question-box">
-            <h3>2. Is it a Song or a Playlist?</h3>
+            <h3>2. Type?</h3>
             <div class="btn-group">
                 <button id="type-Song" onclick="selectType('Song')">Song</button>
                 <button id="type-Playlist" onclick="selectType('Playlist')">Playlist</button>
             </div>
         </div>
-
         <div class="question-box">
-            <h3>3. Paste your Spotify Embed Link</h3>
-            <input type="text" id="spotify-link" placeholder="https://open.spotify.com/embed/..." oninput="generatePreview()">
-            <small style="display:block; margin-top:5px; font-size:0.7rem; opacity:0.6;">(Right click song > Share > Copy Embed Link)</small>
+            <h3>3. Embed Link</h3>
+            <input type="text" id="spotify-link" placeholder="Paste Spotify link here..." oninput="checkInputs()">
         </div>
+        <button id="publish-btn" onclick="publishLink()">Publish to List</button>
+    </div>
 
-        <div id="preview-area" style="display:none;">
-            <div id="status-text"></div>
-            <div id="player-container"></div>
-        </div>
+    <div class="list-container">
+        <h2>Shared Music</h2>
+        <div id="music-list">Loading music...</div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
-        // Your Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyDdLJq7F6r6O9XZTQTIpwdrLR0ZySLGQrY",
             authDomain: "shkl-1db60.firebaseapp.com",
@@ -155,52 +89,79 @@
             messagingSenderId: "83946018492",
             appId: "1:83946018492:web:3cfa51fa2ddebee27de2b9"
         };
+
         const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         let selectedUser = '';
         let selectedType = '';
+
+        window.toggleTheme = () => document.body.classList.toggle('light-mode');
 
         window.selectUser = (user) => {
             selectedUser = user;
             document.getElementById('user-Hoah').className = user === 'Hoah' ? 'selected' : '';
             document.getElementById('user-Locky').className = user === 'Locky' ? 'selected' : '';
-            generatePreview();
+            checkInputs();
         };
 
         window.selectType = (type) => {
             selectedType = type;
             document.getElementById('type-Song').className = type === 'Song' ? 'selected' : '';
             document.getElementById('type-Playlist').className = type === 'Playlist' ? 'selected' : '';
-            generatePreview();
+            checkInputs();
         };
 
-        window.toggleTheme = () => {
-            document.body.classList.toggle('light-mode');
+        window.checkInputs = () => {
+            const link = document.getElementById('spotify-link').value;
+            document.getElementById('publish-btn').style.display = (selectedUser && selectedType && link) ? 'block' : 'none';
         };
 
-        window.generatePreview = () => {
+        window.publishLink = async () => {
             const linkInput = document.getElementById('spotify-link').value;
-            const previewArea = document.getElementById('preview-area');
-            const statusText = document.getElementById('status-text');
-            const playerContainer = document.getElementById('player-container');
+            let cleanLink = linkInput;
+            
+            // Convert standard link to embed link
+            if (cleanLink.includes('open.spotify.com')) {
+                cleanLink = cleanLink.replace('open.spotify.com/', 'open.spotify.com/embed/');
+            }
 
-            // Only show if all 3 questions are answered
-            if (selectedUser && selectedType && linkInput.includes('spotify.com')) {
-                previewArea.style.display = 'block';
-                statusText.innerHTML = `<strong>${selectedUser}</strong>'s <strong>${selectedType}</strong> preview:`;
-                
-                // Ensure link is in embed format
-                let cleanLink = linkInput;
-                if (linkInput.includes('/track/')) cleanLink = linkInput.replace('/track/', '/embed/track/');
-                if (linkInput.includes('/playlist/')) cleanLink = linkInput.replace('/playlist/', '/embed/playlist/');
-
-                playerContainer.innerHTML = `
-                    <iframe src="${cleanLink}" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-                `;
-            } else {
-                previewArea.style.display = 'none';
+            try {
+                await push(ref(db, 'music'), {
+                    user: selectedUser,
+                    type: selectedType,
+                    link: cleanLink,
+                    timestamp: Date.now()
+                });
+                document.getElementById('spotify-link').value = '';
+                alert("Published!");
+            } catch (e) {
+                console.error(e);
             }
         };
+
+        // Listen for new entries and update the list
+        const musicRef = ref(db, 'music');
+        onValue(musicRef, (snapshot) => {
+            const data = snapshot.val();
+            const listDiv = document.getElementById('music-list');
+            listDiv.innerHTML = '';
+            
+            if (data) {
+                // Reverse to show newest first
+                Object.values(data).reverse().forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'post-card';
+                    card.innerHTML = `
+                        <strong>${item.user}</strong> shared a <strong>${item.type}</strong>:
+                        <iframe src="${item.link}" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    `;
+                    listDiv.appendChild(card);
+                });
+            } else {
+                listDiv.innerHTML = "No music shared yet!";
+            }
+        });
     </script>
 </body>
 </html>
