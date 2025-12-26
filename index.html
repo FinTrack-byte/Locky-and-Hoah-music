@@ -15,77 +15,105 @@
         body {
             background-color: var(--bg); color: var(--text);
             font-family: 'Segoe UI', sans-serif; display: flex;
-            flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px;
-            transition: 0.3s;
+            justify-content: center; min-height: 100vh; margin: 0; padding: 20px;
+            transition: 0.3s; gap: 20px;
         }
-        .main-frame, .list-container {
-            background: var(--card); padding: 2rem; border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4); width: 95%; max-width: 550px; text-align: center; margin-bottom: 20px;
+
+        /* شاشة الدخول */
+        #login-overlay {
+            position: fixed; top:0; left:0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 1000; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
         }
-        .question-box { margin-bottom: 20px; }
-        .btn-group { display: flex; gap: 10px; }
+
+        .main-content { display: none; width: 100%; max-width: 1000px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        
+        .main-frame, .list-container, .chat-container {
+            background: var(--card); padding: 20px; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .main-frame { flex: 1; max-width: 500px; text-align: center; height: fit-content; }
+        
+        /* تصميم الشات */
+        .chat-container {
+            width: 300px; height: 500px; display: flex; flex-direction: column;
+        }
+        #chat-messages {
+            flex: 1; overflow-y: auto; margin-bottom: 10px; padding: 5px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .msg { padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; max-width: 80%; }
+        .msg.Hoah { background: #007bff; align-self: flex-start; }
+        .msg.Locky { background: var(--accent); align-self: flex-end; }
+        .msg-user { font-weight: bold; font-size: 0.7rem; display: block; margin-bottom: 3px; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
         button {
             background: var(--input-bg); color: var(--text); border: 2px solid transparent;
             padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; transition: 0.2s;
         }
         button.selected { border-color: var(--accent); background: var(--accent); color: white; }
-        textarea {
+        
+        textarea, input[type="text"] {
             width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--input-bg);
             background: var(--input-bg); color: var(--text); box-sizing: border-box;
-            font-family: monospace; font-size: 0.8rem; resize: vertical; min-height: 80px;
         }
-        #publish-btn {
-            background: var(--accent); color: white; width: 100%; margin-top: 20px; font-size: 1.1rem; 
-            display: none; border: none; border-radius: 10px; padding: 15px; cursor: pointer;
-        }
-        .post-card {
-            background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left;
-            border-left: 5px solid var(--accent);
-        }
-        .post-header { margin-bottom: 10px; font-size: 0.9rem; }
-        .theme-btn { position: fixed; top: 10px; right: 10px; width: auto; z-index: 100; background: var(--text); color: var(--bg); }
+
+        #publish-btn { background: var(--accent); color: white; margin-top: 10px; display: none; border: none; }
+        .post-card { background: var(--input-bg); padding: 15px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid var(--accent); }
+        .theme-btn { position: fixed; top: 10px; right: 10px; z-index: 100; width: auto; }
         iframe { border-radius: 12px; }
     </style>
 </head>
 <body class="dark-mode">
 
-    <button class="theme-btn" onclick="toggleTheme()">🌓 Change Theme</button>
-
-    <div class="main-frame">
-        <h1>Music Hub</h1>
-        
-        <div class="question-box">
-            <h3>1. Who are you?</h3>
-            <div class="btn-group">
-                <button id="user-Hoah" onclick="selectUser('Hoah')">Hoah</button>
-                <button id="user-Locky" onclick="selectUser('Locky')">Locky</button>
-            </div>
+    <div id="login-overlay">
+        <h1>Welcome! Who are you?</h1>
+        <div class="btn-group" style="width: 300px;">
+            <button onclick="setUser('Hoah')">I am Hoah</button>
+            <button onclick="setUser('Locky')">I am Locky</button>
         </div>
-
-        <div class="question-box">
-            <h3>2. Is it a Song or a Playlist?</h3>
-            <div class="btn-group">
-                <button id="type-Song" onclick="selectType('Song')">Song</button>
-                <button id="type-Playlist" onclick="selectType('Playlist')">Playlist</button>
-            </div>
-        </div>
-
-        <div class="question-box">
-            <h3>3. Paste Embed Code (iframe)</h3>
-            <textarea id="spotify-input" placeholder='<iframe src="https://open.spotify.com/embed/track/0VjIj97p3a6nS6N2C4biDD5" ...' oninput="checkInputs()"></textarea>
-        </div>
-
-        <button id="publish-btn" onclick="publishLink()">🚀 Publish to List</button>
     </div>
 
-    <div class="list-container">
-        <h2>Latest Shares</h2>
-        <div id="music-list">Syncing with database...</div>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+
+    <div class="main-content" id="content">
+        <div class="main-frame">
+            <h2>Music Hub</h2>
+            <div class="question-box">
+                <p>Welcome, <b id="display-name"></b>!</p>
+                <h3>1. Is it a Song or a Playlist?</h3>
+                <div class="btn-group">
+                    <button id="type-Song" onclick="selectType('Song')">Song</button>
+                    <button id="type-Playlist" onclick="selectType('Playlist')">Playlist</button>
+                </div>
+            </div>
+            <div class="question-box">
+                <h3>2. Paste Embed Code</h3>
+                <textarea id="spotify-input" placeholder='Paste iframe here...' oninput="checkInputs()"></textarea>
+            </div>
+            <button id="publish-btn" onclick="publishLink()">🚀 Publish to List</button>
+
+            <div class="list-container" style="margin-top: 20px; text-align: left;">
+                <h3>Latest Shares</h3>
+                <div id="music-list">Loading...</div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <h3>Quick Chat</h3>
+            <div id="chat-messages"></div>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="chat-input" placeholder="Type a message...">
+                <button onclick="sendMessage()" style="flex: none; padding: 10px;">Send</button>
+            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyDdLJq7F6r6O9XZTQTIpwdrLR0ZySLGQrY",
@@ -94,23 +122,22 @@
             projectId: "shkl-1db60",
             storageBucket: "shkl-1db60.firebasestorage.app",
             messagingSenderId: "83946018492",
-            appId: "1:83946018492:web:3cfa51fa2ddebee27de2b9",
-            measurementId: "G-PW83MCMQYK"
+            appId: "1:83946018492:web:3cfa51fa2ddebee27de2b9"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let selectedUser = '';
+        let currentUser = '';
         let selectedType = '';
 
         window.toggleTheme = () => document.body.classList.toggle('light-mode');
 
-        window.selectUser = (user) => {
-            selectedUser = user;
-            document.getElementById('user-Hoah').className = user === 'Hoah' ? 'selected' : '';
-            document.getElementById('user-Locky').className = user === 'Locky' ? 'selected' : '';
-            checkInputs();
+        window.setUser = (user) => {
+            currentUser = user;
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('content').style.display = 'flex';
+            document.getElementById('display-name').innerText = user;
         };
 
         window.selectType = (type) => {
@@ -123,56 +150,63 @@
         window.checkInputs = () => {
             const input = document.getElementById('spotify-input').value;
             const btn = document.getElementById('publish-btn');
-            btn.style.display = (selectedUser && selectedType && input.trim().length > 10) ? 'block' : 'none';
+            btn.style.display = (selectedType && input.trim().length > 10) ? 'block' : 'none';
         };
 
         window.publishLink = async () => {
             const rawInput = document.getElementById('spotify-input').value;
-            
-            // Extract the URL from the iframe code using Regex
             const srcMatch = rawInput.match(/src=["']([^"']+)["']/);
             const finalLink = srcMatch ? srcMatch[1] : rawInput;
 
-            if (!finalLink.includes('spotify.com')) {
-                alert("Please paste a valid Spotify embed code or link!");
-                return;
-            }
-
-            try {
-                await push(ref(db, 'music'), {
-                    user: selectedUser,
-                    type: selectedType,
-                    link: finalLink,
-                    timestamp: Date.now()
-                });
-                document.getElementById('spotify-input').value = '';
-                alert("Successfully Published!");
-            } catch (e) {
-                alert("Error saving: " + e.message);
-            }
+            await push(ref(db, 'music'), {
+                user: currentUser,
+                type: selectedType,
+                link: finalLink,
+                timestamp: serverTimestamp()
+            });
+            document.getElementById('spotify-input').value = '';
+            alert("Published!");
         };
 
-        // Real-time update list
-        const musicRef = ref(db, 'music');
-        onValue(musicRef, (snapshot) => {
-            const data = snapshot.val();
+        // الشات
+        window.sendMessage = async () => {
+            const input = document.getElementById('chat-input');
+            if (input.value.trim() === "") return;
+            await push(ref(db, 'messages'), {
+                user: currentUser,
+                text: input.value,
+                timestamp: serverTimestamp()
+            });
+            input.value = "";
+        };
+
+        // استماع لرسائل الشات
+        onValue(query(ref(db, 'messages'), limitToLast(20)), (snapshot) => {
+            const chatDiv = document.getElementById('chat-messages');
+            chatDiv.innerHTML = '';
+            snapshot.forEach(child => {
+                const msg = child.val();
+                const div = document.createElement('div');
+                div.className = `msg ${msg.user}`;
+                div.innerHTML = `<span class="msg-user">${msg.user}</span>${msg.text}`;
+                chatDiv.appendChild(div);
+            });
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        });
+
+        // استماع للموسيقى
+        onValue(ref(db, 'music'), (snapshot) => {
             const listDiv = document.getElementById('music-list');
             listDiv.innerHTML = '';
-            
+            const data = snapshot.val();
             if (data) {
                 Object.values(data).reverse().forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'post-card';
-                    card.innerHTML = `
-                        <div class="post-header">
-                            <strong>${item.user}</strong> shared a <strong>${item.type}</strong>
-                        </div>
-                        <iframe src="${item.link}" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-                    `;
+                    card.innerHTML = `<strong>${item.user}</strong>: ${item.type}<br>
+                    <iframe src="${item.link}" width="100%" height="80" frameBorder="0" allow="autoplay"></iframe>`;
                     listDiv.appendChild(card);
                 });
-            } else {
-                listDiv.innerHTML = "No posts yet. Be the first!";
             }
         });
     </script>
