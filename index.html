@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locky & Hoah Music Hub</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #ffffff;
+            --accent: #1DB954;
+            --input-bg: #2a2a2a;
+        }
+
+        /* Light Mode */
+        body.light-mode {
+            --bg: #f5f5f5;
+            --card: #ffffff;
+            --text: #121212;
+            --input-bg: #eeeeee;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            transition: 0.3s;
+        }
+
+        .main-frame {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .question-box { margin-bottom: 25px; }
+        
+        h3 { margin-bottom: 15px; font-size: 1.1rem; opacity: 0.9; }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            background: var(--input-bg);
+            color: var(--text);
+            border: 2px solid transparent;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+            transition: 0.2s;
+        }
+
+        button.selected {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: white;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid var(--input-bg);
+            background: var(--input-bg);
+            color: var(--text);
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        #preview-area {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--input-bg);
+        }
+
+        .theme-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 0.8rem;
+        }
+
+        iframe {
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Switch Theme</button>
+
+    <div class="main-frame">
+        <h1>Music Hub</h1>
+
+        <div class="question-box">
+            <h3>1. Are you Locky or Hoah?</h3>
+            <div class="btn-group">
+                <button id="user-Hoah" onclick="selectUser('Hoah')">Hoah</button>
+                <button id="user-Locky" onclick="selectUser('Locky')">Locky</button>
+            </div>
+        </div>
+
+        <div class="question-box">
+            <h3>2. Is it a Song or a Playlist?</h3>
+            <div class="btn-group">
+                <button id="type-Song" onclick="selectType('Song')">Song</button>
+                <button id="type-Playlist" onclick="selectType('Playlist')">Playlist</button>
+            </div>
+        </div>
+
+        <div class="question-box">
+            <h3>3. Paste your Spotify Embed Link</h3>
+            <input type="text" id="spotify-link" placeholder="https://open.spotify.com/embed/..." oninput="generatePreview()">
+            <small style="display:block; margin-top:5px; font-size:0.7rem; opacity:0.6;">(Right click song > Share > Copy Embed Link)</small>
+        </div>
+
+        <div id="preview-area" style="display:none;">
+            <div id="status-text"></div>
+            <div id="player-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        
+        // Your Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdLJq7F6r6O9XZTQTIpwdrLR0ZySLGQrY",
+            authDomain: "shkl-1db60.firebaseapp.com",
+            databaseURL: "https://shkl-1db60-default-rtdb.firebaseio.com",
+            projectId: "shkl-1db60",
+            storageBucket: "shkl-1db60.firebasestorage.app",
+            messagingSenderId: "83946018492",
+            appId: "1:83946018492:web:3cfa51fa2ddebee27de2b9"
+        };
+        const app = initializeApp(firebaseConfig);
+
+        let selectedUser = '';
+        let selectedType = '';
+
+        window.selectUser = (user) => {
+            selectedUser = user;
+            document.getElementById('user-Hoah').className = user === 'Hoah' ? 'selected' : '';
+            document.getElementById('user-Locky').className = user === 'Locky' ? 'selected' : '';
+            generatePreview();
+        };
+
+        window.selectType = (type) => {
+            selectedType = type;
+            document.getElementById('type-Song').className = type === 'Song' ? 'selected' : '';
+            document.getElementById('type-Playlist').className = type === 'Playlist' ? 'selected' : '';
+            generatePreview();
+        };
+
+        window.toggleTheme = () => {
+            document.body.classList.toggle('light-mode');
+        };
+
+        window.generatePreview = () => {
+            const linkInput = document.getElementById('spotify-link').value;
+            const previewArea = document.getElementById('preview-area');
+            const statusText = document.getElementById('status-text');
+            const playerContainer = document.getElementById('player-container');
+
+            // Only show if all 3 questions are answered
+            if (selectedUser && selectedType && linkInput.includes('spotify.com')) {
+                previewArea.style.display = 'block';
+                statusText.innerHTML = `<strong>${selectedUser}</strong>'s <strong>${selectedType}</strong> preview:`;
+                
+                // Ensure link is in embed format
+                let cleanLink = linkInput;
+                if (linkInput.includes('/track/')) cleanLink = linkInput.replace('/track/', '/embed/track/');
+                if (linkInput.includes('/playlist/')) cleanLink = linkInput.replace('/playlist/', '/embed/playlist/');
+
+                playerContainer.innerHTML = `
+                    <iframe src="${cleanLink}" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                `;
+            } else {
+                previewArea.style.display = 'none';
+            }
+        };
+    </script>
+</body>
+</html>
